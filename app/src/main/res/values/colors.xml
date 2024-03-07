@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="cardcolour">#FFFFFFFF</color>
+    <color name="gradient_start">#6393C5</color>
+    <color name="gradient_end">#0061C3</color>
+    <color name="textcolourloginpage">#E9878787</color>
+
+</resources>
