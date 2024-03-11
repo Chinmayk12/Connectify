@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Connectify</string>
+    <string name="facebook_app_id">813846754114885</string>
+    <string name="fb_login_protocol_scheme">813846754114885</string>
+    <string name="facebook_client_token">52ee4aa433178eb96f4ff1eda4a5d023</string>
 </resources>

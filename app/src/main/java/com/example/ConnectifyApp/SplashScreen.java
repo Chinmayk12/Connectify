@@ -1,4 +1,4 @@
-package com.example.connectify;
+package com.example.ConnectifyApp;
 
 import androidx.appcompat.app.AppCompatActivity;
 

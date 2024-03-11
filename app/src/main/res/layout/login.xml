@@ -72,7 +72,7 @@
                         android:paddingRight="20dp">
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/signup_fullnameLayout"
+                            android:id="@+id/user_email"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_marginTop="20dp"
@@ -83,7 +83,7 @@
                             app:startIconTint="#878787">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/user_email"
+                                android:id="@+id/user_mail"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:drawableStart="@drawable/email_vector"
@@ -95,7 +95,7 @@
 
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/signup_RepasswordLayout"
+                            android:id="@+id/user_password"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_marginTop="20dp"
@@ -106,7 +106,7 @@
                             app:startIconTint="#878787">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/user_password"
+                                android:id="@+id/password"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:drawableStart="@drawable/password_vector"
@@ -180,6 +180,7 @@
                     android:orientation="vertical">
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/googlelogincard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -216,6 +217,7 @@
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/facebooklogincard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -261,7 +263,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:layout_marginBottom="10dp"
+                    android:layout_marginBottom="15dp"
                     android:orientation="horizontal">
 
                     <TextView

@@ -167,14 +167,14 @@
 
 
                         <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/login_btn"
+                            android:id="@+id/signup_btn"
                             android:layout_width="200dp"
                             android:layout_height="match_parent"
                             android:layout_gravity="center"
                             android:layout_marginTop="10dp"
                             android:background="@drawable/login_button"
                             android:padding="13dp"
-                            android:text="Login"
+                            android:text="Sign Up"
                             android:textAllCaps="false"
                             android:textColor="@color/white"
                             android:textSize="15dp" />
