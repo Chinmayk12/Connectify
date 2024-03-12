@@ -44,7 +44,7 @@ import java.util.Map;
 
 public class login extends AppCompatActivity {
 
-    TextView signup;
+    TextView signup,forgotpassword;
     TextInputLayout email, password;
     FirebaseFirestore db;
     FirebaseAuth mAuth;
@@ -58,6 +58,8 @@ public class login extends AppCompatActivity {
     private static final int REQ_ONE_TAP = 100;
     private  CallbackManager callbackManager;
     String uid;
+
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -76,6 +78,14 @@ public class login extends AppCompatActivity {
         signup = findViewById(R.id.noAccountSignUp);
         email = findViewById(R.id.user_email);
         password = findViewById(R.id.user_password);
+        forgotpassword = findViewById(R.id.forgotPassword);
+
+        forgotpassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), ForgotPassword.class));
+            }
+        });
 
         loginbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -248,18 +258,17 @@ public class login extends AppCompatActivity {
 
     private void saveUserDataToFirebase() {
         //Toast.makeText(getApplicationContext(),"Login",Toast.LENGTH_SHORT).show();
-        String username, email;
-
         uid = mAuth.getCurrentUser().getUid();
-        username = user.getDisplayName();
-        email = mAuth.getCurrentUser().getEmail();
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("name", username.toString().trim());
-        data.put("email", email.toString().trim());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String username = user.getDisplayName();
+
+        Map<String, String> userData = new HashMap<>();
+        userData.put("email", mAuth.getCurrentUser().getEmail());
+        userData.put("username", username);
 
         db.collection("users").document(uid)
-                .set(data)
+                .set(userData)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
