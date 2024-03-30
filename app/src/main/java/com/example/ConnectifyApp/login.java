@@ -67,6 +67,8 @@ public class login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
+
+
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -79,6 +81,11 @@ public class login extends AppCompatActivity {
         email = findViewById(R.id.user_email);
         password = findViewById(R.id.user_password);
         forgotpassword = findViewById(R.id.forgotPassword);
+
+        if (mAuth.getCurrentUser() != null) {
+            // User is already logged in, start Home activity
+            startHomeActivity();
+        }
 
         forgotpassword.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -286,7 +293,7 @@ public class login extends AppCompatActivity {
     private void startHomeActivity()
     {
         Intent homeIntent = new Intent(getApplicationContext(), Home.class);
-        homeIntent.putExtra("uid", uid);
         startActivity(homeIntent);
+        finishAffinity();
     }
 }

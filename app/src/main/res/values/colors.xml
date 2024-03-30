@@ -6,5 +6,6 @@
     <color name="gradient_start">#6393C5</color>
     <color name="gradient_end">#0061C3</color>
     <color name="textcolourloginpage">#E9878787</color>
+    <color name="purple">#800080</color>
 
 </resources>
