@@ -292,8 +292,7 @@ public class login extends AppCompatActivity {
 
     private void startHomeActivity()
     {
-        Intent homeIntent = new Intent(getApplicationContext(), Home.class);
-        startActivity(homeIntent);
+        startActivity(new Intent(getApplicationContext(),Home.class));
         finishAffinity();
     }
 }

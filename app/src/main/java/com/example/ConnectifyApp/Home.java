@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -28,6 +29,48 @@ public class Home extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.home);
+
+        mAuth = FirebaseAuth.getInstance();
+
+        Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if(item.getItemId()==R.id.menu_logout)
+                {
+                    //Toast.makeText(getApplicationContext(),"Logout",Toast.LENGTH_SHORT).show();
+                    logoutUser(navigationView);
+                }
+                else if (item.getItemId()==R.id.user_profile)
+                {
+                    startActivity(new Intent(getApplicationContext(), profile.class));
+                    closeDrawer(navigationView);
+                }
+                return false;
+            }
+        });
+    }
+
+    public void openDrawer(View view)
+    {
+        drawerLayout.open();
+    }
+
+    public void closeDrawer(View view)
+    {
+        drawerLayout.close();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if(drawerToggle.onOptionsItemSelected(item))
@@ -36,40 +79,6 @@ public class Home extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.home);
-
-        setSupportActionBar(findViewById(R.id.toolbar));
-
-
-        mAuth = FirebaseAuth.getInstance();
-
-        Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
-
-        drawerLayout = findViewById(R.id.drawerLayout);
-        navigationView = findViewById(R.id.navigationView);
-        drawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.open,R.string.close);
-        drawerLayout.addDrawerListener(drawerToggle);
-        drawerToggle.syncState();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @SuppressLint("NonConstantResourceId")
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if(item.getItemId()==R.id.menu_logout)
-                {
-                    Toast.makeText(getApplicationContext(),"Logout",Toast.LENGTH_SHORT).show();
-                    logoutUser(navigationView);
-                }
-                return false;
-            }
-        });
     }
 
     public void logoutUser(View view) {

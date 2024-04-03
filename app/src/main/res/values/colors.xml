@@ -7,5 +7,9 @@
     <color name="gradient_end">#0061C3</color>
     <color name="textcolourloginpage">#E9878787</color>
     <color name="purple">#800080</color>
+    <color name="grey">#808080</color>
+    <color name="dark_blue">#32357A</color>
+    <color name="light_blue">#F2F1F6</color>
+
 
 </resources>

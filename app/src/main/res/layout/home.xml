@@ -6,14 +6,9 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     tools:context=".Home"
-    android:id="@+id/drawerLayout"
-    >
+    android:id="@+id/drawerLayout">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:title="My Toolbar"/>
+    <include layout="@layout/home_menu"/>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"

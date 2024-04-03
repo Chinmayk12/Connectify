@@ -136,6 +136,7 @@
                             android:background="@drawable/login_button"
                             android:padding="13dp"
                             android:text="Login"
+                            android:gravity="center"
                             android:textAllCaps="false"
                             android:textColor="@color/white"
                             android:textSize="15dp" />
