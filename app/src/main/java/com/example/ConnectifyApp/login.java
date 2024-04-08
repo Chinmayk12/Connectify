@@ -38,6 +38,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -275,7 +277,7 @@ public class login extends AppCompatActivity {
         userData.put("username", username);
 
         db.collection("users").document(uid)
-                .set(userData)
+                .set(userData, SetOptions.merge())
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {

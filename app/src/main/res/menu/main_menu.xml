@@ -2,19 +2,24 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
 
+        <item android:id="@+id/home"
+            android:icon="@drawable/aboutus_logo"
+            android:title="Home"
+            />
+
         <item android:id="@+id/user_profile"
             android:icon="@drawable/profile_icon"
             android:title="Profile"
             />
 
+        <item android:id="@+id/about"
+            android:icon="@drawable/home_icon"
+            android:title="About Us"
+            />
+
         <item android:id="@+id/menu_logout"
             android:icon="@drawable/logout"
             android:title="Logout"
-            />
-
-        <item android:id="@+id/about"
-            android:icon="@drawable/aboutus_logo"
-            android:title="About Us"
             />
     </group>
 </menu>

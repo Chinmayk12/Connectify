@@ -69,7 +69,7 @@ public class signup extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), com.example.ConnectifyApp.login.class));
+                startActivity(new Intent(getApplicationContext(), login.class));
                 finishAffinity();
             }
         });
@@ -100,7 +100,7 @@ public class signup extends AppCompatActivity {
                                     });
 
                             Toast.makeText(getApplicationContext(), "User Registered Successfully", Toast.LENGTH_LONG).show();
-                            startActivity(new Intent(signup.this, login.class));
+                            //startActivity(new Intent(signup.this, login.class));
                         } else {
                             Toast.makeText(getApplicationContext(), "An error occurred: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                             Log.e("Signup Error", "Error creating user", task.getException());
