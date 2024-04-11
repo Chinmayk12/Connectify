@@ -83,8 +83,7 @@ public class profile extends AppCompatActivity {
         updateProfilebtn = (AppCompatButton) findViewById(R.id.update_profile_btn);
 
         //Setting name to the ProfileName
-        profileUsername.getEditText().setText(mAuth.getCurrentUser().getDisplayName());
-
+        loadUserName();
 
         // Load an image from databse to display
         loadImage();
@@ -128,6 +127,33 @@ public class profile extends AppCompatActivity {
                         .start();
             }
         });
+    }
+
+    private void loadUserName() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String username = documentSnapshot.getString("username");
+                            if (username != null && !username.isEmpty()) {
+                                Log.d("UserName", username);
+                                profileUsername.getEditText().setText(username);
+                            } else {
+                                Log.e("Username ", "Username number not found");
+                            }
+                        } else {
+                            Log.e("Username", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Phone Number", "Error fetching document", e);
+                    }
+                });
     }
 
     private void fetchPhoneNumberFromFirebase() {

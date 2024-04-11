@@ -5,6 +5,8 @@ import static android.content.Context.TELEPHONY_SERVICE;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -12,10 +14,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Notification;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +35,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -38,18 +43,35 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
+import com.permissionx.guolindev.PermissionX;
+import com.permissionx.guolindev.callback.ExplainReasonCallback;
+import com.permissionx.guolindev.callback.RequestCallback;
+import com.permissionx.guolindev.request.ExplainScope;
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
+import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoAcceptCallInvitationButton;
+import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
+import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Home extends AppCompatActivity {
     DrawerLayout drawerLayout;
+    AppCompatRadioButton videoCall,voiceCall;
+    TextInputLayout targetUsercallId;
     NavigationView navigationView;
     ActionBarDrawerToggle drawerToggle;
     FirebaseFirestore db;
     FirebaseAuth mAuth;
-    FirebaseUser user;
     String uid;
+    String userProfileName,userPhoneNumber;
+
+    ZegoSendCallInvitationButton zegoVoiceCallbtn , zegoVideoCallbtn;
+    AppCompatButton startBtn;
     private static final int PERMISSION_REQUEST_READ_PHONE_NUMBERS = 1;
 
     @Override
@@ -58,17 +80,46 @@ public class Home extends AppCompatActivity {
         setContentView(R.layout.home);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
-        Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
 
-        db = FirebaseFirestore.getInstance();
+        startBtn = findViewById(R.id.startBtn);
+        targetUsercallId = findViewById(R.id.user_callid);
 
+        videoCall = findViewById(R.id.radioVideoCall);
+        voiceCall = findViewById(R.id.radioVoiceCall);
+
+        zegoVideoCallbtn = findViewById(R.id.zegovideocallbtn);
+        zegoVoiceCallbtn = findViewById(R.id.zegovoicecallbtn);
+
+        //To Fetch The Mobile Number
         getPhoneNumber();
-        //savePhoneNoToFirebase();
+        //To Fetch The Mobile Number From Firebase
+        fetchPhoneNumberFromFirebase();
+        //To Fetch The Username Of User
+        getUserName();
 
+
+        // need a activityContext.
+        PermissionX.init(Home.this).permissions(Manifest.permission.SYSTEM_ALERT_WINDOW)
+                .onExplainRequestReason(new ExplainReasonCallback() {
+                    @Override
+                    public void onExplainReason(@NonNull ExplainScope scope, @NonNull List<String> deniedList) {
+                        String message = "We need your consent for the following permissions in order to use the offline call function properly";
+                        scope.showRequestReasonDialog(deniedList, message, "Allow", "Deny");
+                    }
+                }).request(new RequestCallback() {
+                    @Override
+                    public void onResult(boolean allGranted, @NonNull List<String> grantedList,
+                                         @NonNull List<String> deniedList)
+                                        {
+
+                                        }
+                });
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
@@ -87,26 +138,160 @@ public class Home extends AppCompatActivity {
                 return false;
             }
         });
+
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                start();
+            }
+        });
     }
 
+    private void fetchPhoneNumberFromFirebase() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String phoneNumber = documentSnapshot.getString("usercallid");
+                            if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                                Log.d("Phone Number", phoneNumber);
+                                userPhoneNumber = phoneNumber;
+                                Toast.makeText(getApplicationContext(),"Phone No:"+userPhoneNumber,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Phone Number", "Phone number not found");
+                            }
+                        } else {
+                            Log.e("Phone Number", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Phone Number", "Error fetching document", e);
+                    }
+                });
+    }
+
+
+
+    private void start() {
+        Toast.makeText(getApplicationContext(),"In Start Fuction",Toast.LENGTH_SHORT).show();
+
+        String targetusercallid = targetUsercallId.getEditText().getText().toString();
+
+        if (videoCall.isChecked()) {
+            startService(userPhoneNumber, userProfileName);
+            setVideoCall(targetusercallid);
+        } else if (voiceCall.isChecked()) {
+            startService(userPhoneNumber, userProfileName);
+            setVoiceCall(targetusercallid);
+        } else {
+            // Neither video nor voice call selected
+            Toast.makeText(getApplicationContext(), "Please select a call type", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (targetusercallid.isEmpty()) {
+            // Target user ID is empty
+            Toast.makeText(getApplicationContext(), "Please enter target user ID", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Start the call
+        Toast.makeText(getApplicationContext(), "Starting call to " + targetusercallid, Toast.LENGTH_SHORT).show();
+    }
+
+    private void startService(String uid,String username) {
+        Toast.makeText(getApplicationContext(),"In Start Service Function",Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(getApplicationContext(),"UID:"+uid+" Username:"+username,Toast.LENGTH_SHORT).show();
+
+        Application application = getApplication(); // Android's application context
+        long appID = 1125184998 ;   // yourAppID
+        String appSign = "b49a0c57d03f55161f9251b5e359b73b800888fc1784d96d4fecf6b262c21adc";  // yourAppSign
+        String userID = uid; // yourUserID, userID should only contain numbers, English characters, and '_'.
+        String userName = username;   // yourUserName
+
+        ZegoUIKitPrebuiltCallInvitationConfig callInvitationConfig = new ZegoUIKitPrebuiltCallInvitationConfig();
+
+        ZegoUIKitPrebuiltCallService.init(getApplication(), appID, appSign, userID, userName,callInvitationConfig);
+    }
+    private void setVoiceCall(String targetUserId) {
+        Toast.makeText(getApplicationContext(),"In Voice Call Fuction",Toast.LENGTH_SHORT).show();
+
+        zegoVoiceCallbtn.setIsVideoCall(false);
+        zegoVoiceCallbtn.setResourceID("zego_uikit_call"); // Please fill in the resource ID name that has been configured in the ZEGOCLOUD's console here.
+        zegoVoiceCallbtn.setInvitees(Collections.singletonList(new ZegoUIKitUser(targetUserId)));
+    }
+
+    private void setVideoCall(String targetUserId) {
+        Toast.makeText(getApplicationContext(),"In Video Call Function",Toast.LENGTH_SHORT).show();
+
+        zegoVideoCallbtn.setIsVideoCall(true);
+        zegoVideoCallbtn.setResourceID("zego_uikit_call"); // Please fill in the resource ID name that has been configured in the ZEGOCLOUD's console here.
+        zegoVideoCallbtn.setInvitees(Collections.singletonList(new ZegoUIKitUser(targetUserId)));
+    }
+
+
     private void getPhoneNumber() {
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        if (telephonyManager != null) {
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_NUMBERS}, PERMISSION_REQUEST_READ_PHONE_NUMBERS);
-                return;
-            }
-            String phoneNumber = telephonyManager.getLine1Number();
-            if (phoneNumber != null && !phoneNumber.isEmpty()) {
-                Log.d("Phone Number", phoneNumber);
-                Toast.makeText(getApplicationContext(),"Ph No:"+phoneNumber,Toast.LENGTH_SHORT).show();
-                savePhoneNoToFirebase(phoneNumber);
-            } else {
-                // Phone number not available
-                Log.e("PhonToae Number", "Phone number not available");
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        boolean phoneNumberSaved = prefs.getBoolean("phoneNumberSaved", false);
+
+        if (!phoneNumberSaved) {
+            TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            if (telephonyManager != null) {
+                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_NUMBERS}, PERMISSION_REQUEST_READ_PHONE_NUMBERS);
+                    return;
+                }
+                userPhoneNumber = telephonyManager.getLine1Number();
+
+                if (userPhoneNumber != null && !userPhoneNumber.isEmpty()){
+                    Log.d("Phone Number", userPhoneNumber);
+                    //Toast.makeText(getApplicationContext(),"Ph No:"+phoneNumber,Toast.LENGTH_SHORT).show();
+                    savePhoneNoToFirebase(userPhoneNumber);
+                    SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
+                    editor.putBoolean("phoneNumberSaved", true);
+                    editor.apply();
+                } else {
+                    // Phone number not available
+                    Log.e("Phone Number", "Phone number not available");
+                }
             }
         }
     }
+
+    private void getUserName() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String username = documentSnapshot.getString("username");
+                            if (username != null && !username.isEmpty()) {
+                                Log.d("UserName", username);
+                                userProfileName = username;
+                                Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Username ", "Username number not found");
+                            }
+                        } else {
+                            Log.e("Username", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Phone Number", "Error fetching document", e);
+                    }
+                });
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -224,4 +409,11 @@ public class Home extends AppCompatActivity {
             super.onBackPressed();
         }
     }
+
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        //To Stop The Service Of ZegoCloud
+//        ZegoUIKitPrebuiltCallInvitationService.unInit();
+//    }
 }

@@ -44,6 +44,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")  // For Image Uploading
     implementation 'com.github.bumptech.glide:glide:4.16.0' // Glide Library for fetching an image
     implementation 'io.michaelrocks:libphonenumber-android:8.13.28' // For fetching a phone number from user device
+    implementation 'com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+'    // ZegoCloud For Video Calling
     implementation 'com.google.firebase:firebase-auth:22.3.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.5.0'
