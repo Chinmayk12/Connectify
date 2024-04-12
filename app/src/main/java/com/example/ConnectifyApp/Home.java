@@ -41,6 +41,7 @@ import com.permissionx.guolindev.callback.RequestCallback;
 import com.permissionx.guolindev.request.ExplainScope;
 import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService;
 import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
 import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
 import java.util.Collections;
@@ -73,6 +74,7 @@ public class Home extends AppCompatActivity {
 
         //Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
 
+        // For Left Side Drawer (Slide Bar)
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
 
@@ -85,6 +87,7 @@ public class Home extends AppCompatActivity {
         zegoVideoCallbtn = findViewById(R.id.zegovideocallbtn);
         zegoVoiceCallbtn = findViewById(R.id.zegovoicecallbtn);
 
+        // Here I Disabled The ZegoSendCallInvitationButton Because When We Click On It Direcly Video Call Was Starting So I Disabled It
         zegoVideoCallbtn.setEnabled(false);
         zegoVoiceCallbtn.setEnabled(false);
 
@@ -96,7 +99,7 @@ public class Home extends AppCompatActivity {
         getUserName();
 
 
-        // need a activityContext.
+        // Permission For Display App Over Another Activity
         PermissionX.init(Home.this).permissions(Manifest.permission.SYSTEM_ALERT_WINDOW)
                 .onExplainRequestReason(new ExplainReasonCallback() {
                     @Override
@@ -113,24 +116,34 @@ public class Home extends AppCompatActivity {
                     }
                 });
 
+
+        // Navigation View For Left Side Drawer From Which We Can Select Option And Navigte To Specific Activity
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if(item.getItemId()==R.id.menu_logout)
-                {
+                if (item.getItemId() == R.id.menu_logout) {
                     //Toast.makeText(getApplicationContext(),"Logout",Toast.LENGTH_SHORT).show();
                     logoutUser(navigationView);
-                }
-                else if (item.getItemId()==R.id.user_profile)
-                {
+                } else if (item.getItemId() == R.id.user_profile) {
                     startActivity(new Intent(getApplicationContext(), profile.class));
+                }
+                else if (item.getItemId()==R.id.home)
+                {
+                    startActivity(new Intent(getApplicationContext(), Home.class));
+                    closeDrawer(navigationView);
+                }
+                else if(item.getItemId()==R.id.chat)
+                {
+                    startActivity(new Intent(getApplicationContext(), Chat.class));
                     closeDrawer(navigationView);
                 }
                 return false;
             }
         });
 
+
+        // Start Button For Stating A Video Call
         startBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -139,6 +152,7 @@ public class Home extends AppCompatActivity {
         });
     }
 
+    // For Fetching The Phone Number From Firebase Which Is Added To Firebase
     private void fetchPhoneNumberFromFirebase() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
@@ -168,7 +182,7 @@ public class Home extends AppCompatActivity {
     }
 
 
-
+    // Start Function Which Can Be Called Only When We Click On Start Button For Initiating Video Call
     private void start() {
         Toast.makeText(getApplicationContext(),"In Start Fuction",Toast.LENGTH_SHORT).show();
 
@@ -200,6 +214,7 @@ public class Home extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Starting call to " + targetusercallid, Toast.LENGTH_SHORT).show();
     }
 
+    // It Is A Service That Will Be Start Before Initing Call To The User
     private void startService(String uid,String username) {
         Toast.makeText(getApplicationContext(),"In Start Service Function",Toast.LENGTH_SHORT).show();
 
@@ -215,6 +230,8 @@ public class Home extends AppCompatActivity {
 
         ZegoUIKitPrebuiltCallService.init(getApplication(), appID, appSign, userID, userName,callInvitationConfig);
     }
+
+    // For Starting Voice Call To User With His ID
     private void setVoiceCall(String targetUserId) {
         Toast.makeText(getApplicationContext(),"In Voice Call Fuction",Toast.LENGTH_SHORT).show();
 
@@ -224,6 +241,7 @@ public class Home extends AppCompatActivity {
         zegoVoiceCallbtn.setInvitees(Collections.singletonList(new ZegoUIKitUser(targetUserId)));
     }
 
+    // For Starting Video Call To User With His ID
     private void setVideoCall(String targetUserId) {
         Toast.makeText(getApplicationContext(),"In Video Call Function",Toast.LENGTH_SHORT).show();
 
@@ -233,6 +251,7 @@ public class Home extends AppCompatActivity {
     }
 
 
+    // Getting An Mobile Number From Device To Set User Call Id As Phone Number As Default
     private void getPhoneNumber() {
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         boolean phoneNumberSaved = prefs.getBoolean("phoneNumberSaved", false);
@@ -261,6 +280,7 @@ public class Home extends AppCompatActivity {
         }
     }
 
+    // For Fetching The Username From Firebase
     private void getUserName() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
@@ -290,6 +310,7 @@ public class Home extends AppCompatActivity {
     }
 
 
+    // Request Result For "GetPhoneNumber()"
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -303,6 +324,8 @@ public class Home extends AppCompatActivity {
             }
         }
     }
+
+    // Saving Phone Number To The Firebase
     private void savePhoneNoToFirebase(String phNumber) {
         if (phNumber != null && !phNumber.isEmpty()) {
             uid = mAuth.getCurrentUser().getUid();
@@ -407,10 +430,10 @@ public class Home extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        //To Stop The Service Of ZegoCloud
-//        ZegoUIKitPrebuiltCallInvitationService.unInit();
-//    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //To Stop The Service Of ZegoCloud
+        ZegoUIKitPrebuiltCallInvitationService.unInit();
+    }
 }

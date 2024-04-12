@@ -42,6 +42,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.zegocloud.zimkit.services.ZIMKit;
 
 import org.w3c.dom.Text;
 
@@ -49,20 +50,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import im.zego.zim.enums.ZIMErrorCode;
+
 public class profile extends AppCompatActivity {
     ImageButton cameraBtn;
     AppCompatButton updateProfilebtn;
     TextInputLayout profileUsername, userCallId;
     CircleImageView circleImageView;
-
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ActionBarDrawerToggle drawerToggle;
-    private FirebaseAuth mAuth;
+    FirebaseAuth mAuth;
     StorageReference storageReference;
     String imageId;
-
     FirebaseFirestore db;
+    String userProfileId,profileUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,7 @@ public class profile extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
 
         circleImageView = findViewById(R.id.profile_image);
         cameraBtn = findViewById(R.id.camerabtn);
@@ -82,6 +85,9 @@ public class profile extends AppCompatActivity {
         userCallId = (TextInputLayout) findViewById(R.id.user_callid);
         updateProfilebtn = (AppCompatButton) findViewById(R.id.update_profile_btn);
 
+        // Initiating A Zegocloud Chat
+        initZegoCloudChat();
+        
         //Setting name to the ProfileName
         loadUserName();
 
@@ -91,10 +97,12 @@ public class profile extends AppCompatActivity {
         // To Fetch number from firebase to diaplay it on profile page
         fetchPhoneNumberFromFirebase();
 
+        //To Fetch The Username Of User
+        getUserName();
+
         updateProfilebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 updateUserData();
             }
         });
@@ -107,10 +115,16 @@ public class profile extends AppCompatActivity {
                     logoutUser(navigationView);
                 } else if (item.getItemId() == R.id.user_profile) {
                     startActivity(new Intent(getApplicationContext(), profile.class));
+                    closeDrawer(navigationView);
                 }
                 else if (item.getItemId()==R.id.home)
                 {
                     startActivity(new Intent(getApplicationContext(), Home.class));
+                    closeDrawer(navigationView);
+                }
+                else if(item.getItemId()==R.id.chat)
+                {
+                    connectUser(userProfileId, profileUserName,"");
                     closeDrawer(navigationView);
                 }
                 return false;
@@ -129,6 +143,78 @@ public class profile extends AppCompatActivity {
         });
     }
 
+    private void getUserName() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String username = documentSnapshot.getString("username");
+                            if (username != null && !username.isEmpty()) {
+                                Log.d("UserName", username);
+                                profileUserName = username;
+
+                                //Toast.makeText(getApplicationContext(),"Username:"+profileUserName,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Username ", "Username number not found");
+                            }
+                        } else {
+                            Log.e("Username", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Phone Number", "Error fetching document", e);
+                    }
+                });
+    }
+
+    public void initZegoCloudChat()
+    {
+        Long appId = (long) 263772551;    // The AppID you get from ZEGOCLOUD Admin Console.
+        String appSign = "4fde8262fa24e2a8e59e9a0ea37c6e61d725fd42286f67857d677af579d898b1";    // The App Sign you get from ZEGOCLOUD Admin Console.
+        ZIMKit.initWith(getApplication(),appId,appSign);
+        // Online notification for the initialization (use the following code if this is needed).
+        ZIMKit.initNotifications();
+    }
+    public void connectUser(String userId, String userName,String userAvatar) {
+        // Logs in.
+        ZIMKit.connectUser(userId,userName,userAvatar, errorInfo -> {
+            if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                // Operation after successful login. You will be redirected to other modules only after successful login. In this sample code, you will be redirected to the conversation module.
+                toConversationActivity();
+            } else {
+
+            }
+        });
+    }
+
+    // Integrate the conversation list into your Activity as a Fragment
+    private void toConversationActivity() {
+        // Redirect to the conversation list (Activity) you created.
+        Intent intent = new Intent(this,Chat.class);
+        startActivity(intent);
+    }
+
+    public void openDrawer(View view) {
+        drawerLayout.open();
+    }
+    public void closeDrawer(View view)
+    {
+        drawerLayout.close();
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     private void loadUserName() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
@@ -167,6 +253,7 @@ public class profile extends AppCompatActivity {
                             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                                 Log.d("Phone Number", phoneNumber);
                                 userCallId.getEditText().setText(phoneNumber);
+                                userProfileId = phoneNumber;
                             } else {
                                 Log.e("Phone Number", "Phone number not found");
                             }
@@ -346,26 +433,6 @@ public class profile extends AppCompatActivity {
                         Log.e("ProfileActivity", "Error getting document", e);
                     }
                 });
-    }
-
-
-
-    public void openDrawer(View view) {
-        drawerLayout.open();
-    }
-    public void closeDrawer(View view)
-    {
-        drawerLayout.close();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void logoutUser(View view) {
