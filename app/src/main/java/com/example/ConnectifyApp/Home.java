@@ -10,26 +10,21 @@ import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Application;
-import android.app.Notification;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -37,23 +32,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.storage.FirebaseStorage;
 import com.permissionx.guolindev.PermissionX;
 import com.permissionx.guolindev.callback.ExplainReasonCallback;
 import com.permissionx.guolindev.callback.RequestCallback;
 import com.permissionx.guolindev.request.ExplainScope;
 import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService;
 import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
-import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
-import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoAcceptCallInvitationButton;
 import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +85,9 @@ public class Home extends AppCompatActivity {
         zegoVideoCallbtn = findViewById(R.id.zegovideocallbtn);
         zegoVoiceCallbtn = findViewById(R.id.zegovoicecallbtn);
 
+        zegoVideoCallbtn.setEnabled(false);
+        zegoVoiceCallbtn.setEnabled(false);
+
         //To Fetch The Mobile Number
         getPhoneNumber();
         //To Fetch The Mobile Number From Firebase
@@ -116,9 +108,9 @@ public class Home extends AppCompatActivity {
                     @Override
                     public void onResult(boolean allGranted, @NonNull List<String> grantedList,
                                          @NonNull List<String> deniedList)
-                                        {
+                    {
 
-                                        }
+                    }
                 });
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -185,9 +177,13 @@ public class Home extends AppCompatActivity {
         if (videoCall.isChecked()) {
             startService(userPhoneNumber, userProfileName);
             setVideoCall(targetusercallid);
+            zegoVideoCallbtn.performClick();
+
         } else if (voiceCall.isChecked()) {
             startService(userPhoneNumber, userProfileName);
             setVoiceCall(targetusercallid);
+            zegoVoiceCallbtn.performClick();
+
         } else {
             // Neither video nor voice call selected
             Toast.makeText(getApplicationContext(), "Please select a call type", Toast.LENGTH_SHORT).show();
@@ -223,6 +219,7 @@ public class Home extends AppCompatActivity {
         Toast.makeText(getApplicationContext(),"In Voice Call Fuction",Toast.LENGTH_SHORT).show();
 
         zegoVoiceCallbtn.setIsVideoCall(false);
+        zegoVoiceCallbtn.setEnabled(false);
         zegoVoiceCallbtn.setResourceID("zego_uikit_call"); // Please fill in the resource ID name that has been configured in the ZEGOCLOUD's console here.
         zegoVoiceCallbtn.setInvitees(Collections.singletonList(new ZegoUIKitUser(targetUserId)));
     }
