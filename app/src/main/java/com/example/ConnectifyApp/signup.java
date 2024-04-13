@@ -81,7 +81,9 @@ public class signup extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+
                             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            FirebaseAuth.getInstance().signOut();
 
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(nametxt)
@@ -92,7 +94,7 @@ public class signup extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
-                                                // Profile updated successfully
+
                                             } else {
                                                 // Failed to update profile
                                             }

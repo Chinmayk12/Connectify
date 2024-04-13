@@ -42,6 +42,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
 import com.zegocloud.zimkit.services.ZIMKit;
 
 import org.w3c.dom.Text;
@@ -87,7 +88,7 @@ public class profile extends AppCompatActivity {
 
         // Initiating A Zegocloud Chat
         initZegoCloudChat();
-        
+
         //Setting name to the ProfileName
         loadUserName();
 
@@ -113,19 +114,18 @@ public class profile extends AppCompatActivity {
                 if (item.getItemId() == R.id.menu_logout) {
                     //Toast.makeText(getApplicationContext(),"Logout",Toast.LENGTH_SHORT).show();
                     logoutUser(navigationView);
-                } else if (item.getItemId() == R.id.user_profile) {
-                    startActivity(new Intent(getApplicationContext(), profile.class));
-                    closeDrawer(navigationView);
                 }
                 else if (item.getItemId()==R.id.home)
                 {
                     startActivity(new Intent(getApplicationContext(), Home.class));
+                    finish();
                     closeDrawer(navigationView);
                 }
                 else if(item.getItemId()==R.id.chat)
                 {
                     connectUser(userProfileId, profileUserName,"");
                     closeDrawer(navigationView);
+                    //finish();
                 }
                 return false;
             }
