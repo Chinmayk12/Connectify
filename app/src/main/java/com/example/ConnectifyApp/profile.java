@@ -65,7 +65,7 @@ public class profile extends AppCompatActivity {
     StorageReference storageReference;
     String imageId;
     FirebaseFirestore db;
-    String userProfileId,profileUserName;
+    String userProfileId,profileUserName,userProfileImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +74,6 @@ public class profile extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-
 
         circleImageView = findViewById(R.id.profile_image);
         cameraBtn = findViewById(R.id.camerabtn);
@@ -123,7 +122,13 @@ public class profile extends AppCompatActivity {
                 }
                 else if(item.getItemId()==R.id.chat)
                 {
-                    connectUser(userProfileId, profileUserName,"");
+                    connectUser(userProfileId, profileUserName,userProfileImage);
+                    closeDrawer(navigationView);
+                    //finish();
+                }
+                else if(item.getItemId()==R.id.about)
+                {
+                    startActivity(new Intent(getApplicationContext(), about_us.class));
                     closeDrawer(navigationView);
                     //finish();
                 }
@@ -403,7 +408,7 @@ public class profile extends AppCompatActivity {
                 });
     }
 
-    // Working
+    // Load Image Working
     private void loadImage() {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
@@ -413,11 +418,11 @@ public class profile extends AppCompatActivity {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot.exists()) {
-                            String imageUrl = documentSnapshot.getString("imageUrl");
+                            userProfileImage = documentSnapshot.getString("imageUrl");
 
-                            if (imageUrl != null && !imageUrl.isEmpty()) {
+                            if (userProfileImage != null && !userProfileImage.isEmpty()) {
                                 // Use an image loading library like Glide or Picasso to load the image into your circleImageView
-                                Glide.with(profile.this).load(imageUrl).into(circleImageView);
+                                Glide.with(profile.this).load(userProfileImage).into(circleImageView);
                             } else {
                                 // Set a placeholder image if the imageUrl is not available
                                 circleImageView.setImageResource(R.drawable.profile_image_logo);

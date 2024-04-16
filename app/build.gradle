@@ -50,6 +50,9 @@ dependencies {
     implementation 'io.michaelrocks:libphonenumber-android:8.13.28' // For fetching a phone number from user device
     implementation 'com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+'// ZegoCloud For Video Calling
     implementation 'com.github.ZEGOCLOUD:zego_inapp_chat_uikit_android:+'   // ZegoCloud For Chat Functionality
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'    // For PermissionX
+    implementation 'com.google.firebase:firebase-messaging:23.4.1'  // For Firebase Messaging
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")    //OKHTTP Library
     implementation 'com.google.firebase:firebase-auth:22.3.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.5.0'

@@ -1,4 +1,5 @@
 package com.example.ConnectifyApp;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -6,17 +7,22 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Toast;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -31,10 +37,14 @@ import im.zego.zim.enums.ZIMErrorCode;
 
 public class Chat extends AppCompatActivity {
 
-    FloatingActionButton floatingActionButton;
+    WebView webView;
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+    ActionBarDrawerToggle drawerToggle;
+    String userProfileId,profileUserName,userProfileImage;
+    private FirebaseAuth mAuth;
     FirebaseFirestore db;
-    FirebaseAuth mAuth;
-    String userPhoneNumber;
+    FloatingActionButton floatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +54,73 @@ public class Chat extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        fetchPhoneNumberFromFirebase();
-        
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+        webView = findViewById(R.id.webView);
         floatingActionButton = findViewById(R.id.floatingActionButton);
+
+        // Load an image from databse to display
+        fetchImage();
+
+        // To Fetch number from firebase to diaplay it on profile page
+        fetchPhoneNumberFromFirebase();
+
+        //To Fetch The Username Of User
+        getUserName();
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.menu_logout) {
+                    //Toast.makeText(getApplicationContext(),"Logout",Toast.LENGTH_SHORT).show();
+                    logoutUser(navigationView);
+                }
+                else if (item.getItemId()==R.id.home)   // Video Call
+                {
+                    startActivity(new Intent(getApplicationContext(), Home.class));
+                    finish();
+                    closeDrawer(navigationView);
+                }
+                else if(item.getItemId()==R.id.user_profile)
+                {
+                    startActivity(new Intent(getApplicationContext(), profile.class));
+                    closeDrawer(navigationView);
+                    //finish();
+                }
+                else if(item.getItemId()==R.id.about)
+                {
+                    startActivity(new Intent(getApplicationContext(), about_us.class));
+                    closeDrawer(navigationView);
+                    //finish();
+                }
+                return false;
+            }
+        });
+
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showPopupMenu();
             }
         });
+    }
+
+    public void openDrawer(View view) {
+        drawerLayout.open();
+    }
+    public void closeDrawer(View view)
+    {
+        drawerLayout.close();
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void showPopupMenu() {
@@ -207,6 +275,35 @@ public class Chat extends AppCompatActivity {
         });
     }
 
+    private void fetchImage() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        String uid = mAuth.getCurrentUser().getUid();
+
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            userProfileImage = documentSnapshot.getString("imageUrl");
+                            if (userProfileImage != null && !userProfileImage.isEmpty()) {
+                                Log.d("User Avatar", userProfileImage);
+                            } else {
+                                Log.e("User Avatar", "User avatar not found");
+                            }
+                        } else {
+                            Log.e("User Avatar", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("User Avatar", "Error fetching document", e);
+                    }
+                });
+
+    }
     private void fetchPhoneNumberFromFirebase() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
@@ -217,8 +314,8 @@ public class Chat extends AppCompatActivity {
                             String phoneNumber = documentSnapshot.getString("usercallid");
                             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                                 Log.d("Phone Number", phoneNumber);
-                                userPhoneNumber = phoneNumber;
-                                Toast.makeText(getApplicationContext(),"Phone No:"+userPhoneNumber,Toast.LENGTH_SHORT).show();
+                                userProfileId = phoneNumber;
+                                Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Phone Number", "Phone number not found");
                             }
@@ -234,6 +331,36 @@ public class Chat extends AppCompatActivity {
                     }
                 });
     }
+
+    private void getUserName() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String username = documentSnapshot.getString("username");
+                            if (username != null && !username.isEmpty()) {
+                                Log.d("UserName", username);
+                                profileUserName = username;
+                                Toast.makeText(getApplicationContext(),"Username:"+profileUserName,Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.e("Username ", "Username number not found");
+                            }
+                        } else {
+                            Log.e("Username", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Phone Number", "Error fetching document", e);
+                    }
+                });
+    }
+
+
 
     public void logoutUser(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
@@ -258,6 +385,16 @@ public class Chat extends AppCompatActivity {
         });
 
         builder.create().show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+
     }
 
 }

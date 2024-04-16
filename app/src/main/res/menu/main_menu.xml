@@ -4,7 +4,7 @@
 
         <item android:id="@+id/home"
             android:icon="@drawable/aboutus_logo"
-            android:title="Home"
+            android:title="Video Call"
             />
 
         <item android:id="@+id/chat"

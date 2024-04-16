@@ -2,12 +2,15 @@ package com.example.ConnectifyApp;
 
     import static android.content.Context.TELEPHONY_SERVICE;
 
+    import androidx.activity.result.ActivityResultLauncher;
+    import androidx.activity.result.contract.ActivityResultContracts;
     import androidx.annotation.NonNull;
     import androidx.appcompat.app.ActionBarDrawerToggle;
     import androidx.appcompat.app.AppCompatActivity;
     import androidx.appcompat.widget.AppCompatButton;
     import androidx.appcompat.widget.AppCompatRadioButton;
     import androidx.core.app.ActivityCompat;
+    import androidx.core.app.NotificationManagerCompat;
     import androidx.core.view.GravityCompat;
     import androidx.drawerlayout.widget.DrawerLayout;
     import android.Manifest;
@@ -20,11 +23,14 @@ package com.example.ConnectifyApp;
     import android.content.SharedPreferences;
     import android.content.pm.PackageManager;
     import android.os.Bundle;
+    import android.provider.Settings;
     import android.telephony.TelephonyManager;
     import android.util.Log;
     import android.view.MenuItem;
     import android.view.View;
+    import android.widget.TextView;
     import android.widget.Toast;
+    import com.bumptech.glide.Glide;
     import com.google.android.gms.tasks.OnCompleteListener;
     import com.google.android.gms.tasks.OnFailureListener;
     import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,6 +41,7 @@ package com.example.ConnectifyApp;
     import com.google.firebase.firestore.DocumentSnapshot;
     import com.google.firebase.firestore.FirebaseFirestore;
     import com.google.firebase.firestore.SetOptions;
+    import com.google.firebase.messaging.FirebaseMessaging;
     import com.permissionx.guolindev.PermissionX;
     import com.permissionx.guolindev.callback.ExplainReasonCallback;
     import com.permissionx.guolindev.callback.RequestCallback;
@@ -51,6 +58,7 @@ package com.example.ConnectifyApp;
     import java.util.List;
     import java.util.Map;
 
+    import de.hdodenhof.circleimageview.CircleImageView;
     import im.zego.zim.enums.ZIMErrorCode;
 
 public class Home extends AppCompatActivity {
@@ -58,14 +66,16 @@ public class Home extends AppCompatActivity {
     AppCompatRadioButton videoCall,voiceCall;
     TextInputLayout targetUsercallId;
     NavigationView navigationView;
+    CircleImageView circleImageView;
+    View headerView;
     ActionBarDrawerToggle drawerToggle;
     FirebaseFirestore db;
     FirebaseAuth mAuth;
     String uid;
-    String userProfileName,userPhoneNumber;
-
+    String userProfileName,userProfileId,userProfileEmail,userProfileImage;
     ZegoSendCallInvitationButton zegoVoiceCallbtn , zegoVideoCallbtn;
     AppCompatButton startBtn;
+    TextView drawerUserName,drawerUserEmail;
     private static final int PERMISSION_REQUEST_READ_PHONE_NUMBERS = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +87,21 @@ public class Home extends AppCompatActivity {
 
         //Toast.makeText(getApplicationContext(), "UID:" + mAuth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
 
+
+        startBtn = findViewById(R.id.startBtn);
+        targetUsercallId = findViewById(R.id.user_callid);
+
         // For Left Side Drawer (Slide Bar)
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
 
-        startBtn = findViewById(R.id.startBtn);
-        targetUsercallId = findViewById(R.id.user_callid);
+        // Getting the view of the Drawer from navigation view
+        headerView = navigationView.getHeaderView(0);
+
+        //Drawer Elements
+        circleImageView = headerView.findViewById(R.id.drawer_image);
+        drawerUserName = headerView.findViewById(R.id.drawerUserName);
+        drawerUserEmail = headerView.findViewById(R.id.drawerUserEmail);
 
         videoCall = findViewById(R.id.radioVideoCall);
         voiceCall = findViewById(R.id.radioVoiceCall);
@@ -93,16 +112,23 @@ public class Home extends AppCompatActivity {
         // Here I Disabled The ZegoSendCallInvitationButton Because When We Click On It Direcly Video Call Was Starting So I Disabled It
         zegoVideoCallbtn.setEnabled(false);
         zegoVoiceCallbtn.setEnabled(false);
-
+        
+        
         // Initiating A Zegocloud Chat
         initZegoCloudChat();
         //To Fetch The Mobile Number
         getPhoneNumber();
+        // Check if the app has notification permission
+        if (!isNotificationPermissionGranted()) {
+            // If not granted, request the permission
+            requestNotificationPermission();
+        }
         //To Fetch The Mobile Number From Firebase
         fetchPhoneNumberFromFirebase();
-        //To Fetch The Username Of User
-        getUserName();
-
+        // Load drawer data from databse to display
+        loadDrawerData();
+        //getToken For Firebase Cloud Messaging
+        getToken();
 
         // Permission For Display App Over Another Activity
         PermissionX.init(Home.this).permissions(Manifest.permission.SYSTEM_ALERT_WINDOW)
@@ -121,7 +147,6 @@ public class Home extends AppCompatActivity {
                     }
                 });
 
-
         // Navigation View For Left Side Drawer From Which We Can Select Option And Navigte To Specific Activity
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
@@ -137,14 +162,19 @@ public class Home extends AppCompatActivity {
                 }
                 else if(item.getItemId()==R.id.chat)
                 {
-                    startActivity(new Intent(getApplicationContext(), Chat.class));
+                    connectUser(userProfileId, userProfileName,userProfileImage);
+                    closeDrawer(navigationView);
+                    //finish();
+                }
+                else if(item.getItemId()==R.id.about)
+                {
+                    startActivity(new Intent(getApplicationContext(), about_us.class));
                     closeDrawer(navigationView);
                     //finish();
                 }
                 return false;
             }
         });
-
 
         // Start Button For Stating A Video Call
         startBtn.setOnClickListener(new View.OnClickListener() {
@@ -153,6 +183,117 @@ public class Home extends AppCompatActivity {
                 start();
             }
         });
+    }
+
+    private void loadDrawerData() {
+        //Load an image from database
+        loadImage();
+
+        //load username
+        getUserName();
+
+        //load useremail
+        getUserEmail();
+
+    }
+
+    private void getUserEmail() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String email = documentSnapshot.getString("email");
+                            if (email != null && !email.isEmpty()) {
+                                Log.d("UserName", email);
+                                userProfileEmail = email;
+                                drawerUserEmail.setText(userProfileEmail);
+                                Toast.makeText(getApplicationContext(),"Email:"+userProfileName,Toast.LENGTH_SHORT).show();
+                            } else {
+                                drawerUserEmail.setText("Email: Email Not Found");
+                                Log.e("Email ", "Email not found");
+                            }
+                        } else {
+                            Log.e("Email", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Email Error", "Error fetching document", e);
+                    }
+                });
+    }
+
+    private boolean isNotificationPermissionGranted() {
+        // Check if notification permission is granted
+        return NotificationManagerCompat.from(this).areNotificationsEnabled();
+    }
+
+    private void requestNotificationPermission() {
+        // Display a dialog to the user to request notification permission
+        new AlertDialog.Builder(this)
+                .setTitle("Notification Permission")
+                .setMessage("This app requires notification permission to function properly.")
+                .setPositiveButton("Allow", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Open notification settings to allow the permission
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                        startActivity(intent);
+
+                        //startActivity(new Intent(getApplicationContext(), Home.class));
+                    }
+                })
+                .setNegativeButton("Disallow", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // User disallowed notification permission
+                        // You can handle this situation as needed
+                    }
+                })
+                .show();
+    }
+    private void getToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("Problem While Fetching A Token", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        Log.d("FCM Token:",token);
+                        Toast.makeText(Home.this, token, Toast.LENGTH_SHORT).show();
+                        // Update the token in Firebase Firestore or Realtime Database
+                        updateTokenInFirebase(token);
+                    }
+                });
+    }
+
+    private void updateTokenInFirebase(String token) {
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+                .update("fcmtoken", token)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d("FCM Token Updated", "Token updated successfully");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("FCM Token Update Failed", "Error updating token", e);
+                    }
+                });
     }
 
 
@@ -183,6 +324,40 @@ public class Home extends AppCompatActivity {
         startActivity(intent);
     }
 
+    // Load Image Working
+    private void loadImage() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        firestore.collection("users").document(mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            userProfileImage = documentSnapshot.getString("imageUrl");
+                            if (userProfileImage != null && !userProfileImage.isEmpty()) {
+                                Log.d("User Avatar", userProfileImage);
+                                if (circleImageView != null) {
+                                    Glide.with(Home.this).load(userProfileImage).into(circleImageView);
+                                } else {
+                                    Log.e("User Avatar", "CircleImageView is null");
+                                }
+                            } else {
+                                Log.e("User Avatar", "User avatar URL is null or empty");
+                            }
+                        } else {
+                            Log.e("User Avatar", "Document does not exist");
+                        }
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ProfileActivity", "Error getting document", e);
+                    }
+                });
+    }
 
     // For Fetching The Phone Number From Firebase Which Is Added To Firebase
     private void fetchPhoneNumberFromFirebase() {
@@ -195,8 +370,8 @@ public class Home extends AppCompatActivity {
                             String phoneNumber = documentSnapshot.getString("usercallid");
                             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                                 Log.d("Phone Number", phoneNumber);
-                                userPhoneNumber = phoneNumber;
-                                Toast.makeText(getApplicationContext(),"Phone No:"+userPhoneNumber,Toast.LENGTH_SHORT).show();
+                                userProfileId = phoneNumber;
+                                Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Phone Number", "Phone number not found");
                             }
@@ -221,12 +396,12 @@ public class Home extends AppCompatActivity {
         String targetusercallid = targetUsercallId.getEditText().getText().toString();
 
         if (videoCall.isChecked()) {
-            startService(userPhoneNumber, userProfileName);
+            startService(userProfileId, userProfileName);
             setVideoCall(targetusercallid);
             zegoVideoCallbtn.performClick();
 
         } else if (voiceCall.isChecked()) {
-            startService(userPhoneNumber, userProfileName);
+            startService(userProfileId, userProfileName);
             setVoiceCall(targetusercallid);
             zegoVoiceCallbtn.performClick();
 
@@ -295,12 +470,12 @@ public class Home extends AppCompatActivity {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_NUMBERS}, PERMISSION_REQUEST_READ_PHONE_NUMBERS);
                     return;
                 }
-                userPhoneNumber = telephonyManager.getLine1Number();
+                userProfileId = telephonyManager.getLine1Number();
 
-                if (userPhoneNumber != null && !userPhoneNumber.isEmpty()){
-                    Log.d("Phone Number", userPhoneNumber);
+                if (userProfileId != null && !userProfileId.isEmpty()){
+                    Log.d("Phone Number", userProfileId);
                     //Toast.makeText(getApplicationContext(),"Ph No:"+phoneNumber,Toast.LENGTH_SHORT).show();
-                    savePhoneNoToFirebase(userPhoneNumber);
+                    savePhoneNoToFirebase(userProfileId);
                     SharedPreferences.Editor editor = getSharedPreferences("MyPrefs", MODE_PRIVATE).edit();
                     editor.putBoolean("phoneNumberSaved", true);
                     editor.apply();
@@ -324,6 +499,7 @@ public class Home extends AppCompatActivity {
                             if (username != null && !username.isEmpty()) {
                                 Log.d("UserName", username);
                                 userProfileName = username;
+                                drawerUserName.setText(username);
                                 Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Username ", "Username number not found");

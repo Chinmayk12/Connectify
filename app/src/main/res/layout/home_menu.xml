@@ -6,7 +6,7 @@
     <Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FF0000"
+        android:background="#3e5172"
         >
 
         <ImageButton
@@ -14,14 +14,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="openDrawer"
-            android:background="#FF0000"
+            android:background="#3e5172"
             android:src="@drawable/menu_logo"
             />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Home"
+            android:text="Video Call"
             android:layout_marginStart="30dp"
             android:textSize="25dp"
             android:textColor="@color/white"
