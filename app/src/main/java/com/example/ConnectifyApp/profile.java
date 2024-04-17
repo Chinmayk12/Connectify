@@ -24,6 +24,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -56,8 +58,9 @@ import im.zego.zim.enums.ZIMErrorCode;
 public class profile extends AppCompatActivity {
     ImageButton cameraBtn;
     AppCompatButton updateProfilebtn;
-    TextInputLayout profileUsername, userCallId;
-    CircleImageView circleImageView;
+    TextInputLayout etprofileUsername, userCallId;
+    CircleImageView profilecircleImageView;
+    ImageView drawercircleImageView;
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ActionBarDrawerToggle drawerToggle;
@@ -65,7 +68,9 @@ public class profile extends AppCompatActivity {
     StorageReference storageReference;
     String imageId;
     FirebaseFirestore db;
-    String userProfileId,profileUserName,userProfileImage;
+    private View headerView;
+    String userProfileId,profileUserName,userProfileEmail,userProfileImage;
+    TextView drawerUserName,drawerUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +80,21 @@ public class profile extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        circleImageView = findViewById(R.id.profile_image);
+        profilecircleImageView = findViewById(R.id.profile_image);
         cameraBtn = findViewById(R.id.camerabtn);
 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
 
-        profileUsername = (TextInputLayout) findViewById(R.id.user_name);
+        // Getting the view of the Drawer from navigation view
+        headerView = navigationView.getHeaderView(0);
+
+        //Drawer Elements
+        drawercircleImageView = headerView.findViewById(R.id.drawer_image);
+        drawerUserName = headerView.findViewById(R.id.drawerUserName);
+        drawerUserEmail = headerView.findViewById(R.id.drawerUserEmail);
+
+        etprofileUsername = (TextInputLayout) findViewById(R.id.user_name);
         userCallId = (TextInputLayout) findViewById(R.id.user_callid);
         updateProfilebtn = (AppCompatButton) findViewById(R.id.update_profile_btn);
 
@@ -89,16 +102,13 @@ public class profile extends AppCompatActivity {
         initZegoCloudChat();
 
         //Setting name to the ProfileName
-        loadUserName();
+        getUserName();
 
-        // Load an image from databse to display
-        loadImage();
+        // Load drawer data from databse to display
+        loadDrawerData();
 
         // To Fetch number from firebase to diaplay it on profile page
         fetchPhoneNumberFromFirebase();
-
-        //To Fetch The Username Of User
-        getUserName();
 
         updateProfilebtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,6 +158,48 @@ public class profile extends AppCompatActivity {
         });
     }
 
+    private void loadDrawerData() {
+        //Load an image from database
+        loadImage();
+
+        //load username
+        getUserName();
+
+        //load useremail
+        getUserEmail();
+
+    }
+
+    private void getUserEmail() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String email = documentSnapshot.getString("email");
+                            if (email != null && !email.isEmpty()) {
+                                Log.d("UserName", email);
+                                userProfileEmail = email;
+                                drawerUserEmail.setText(userProfileEmail);
+                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                            } else {
+                                drawerUserEmail.setText("Email: Email Not Found");
+                                Log.e("Email ", "Email not found");
+                            }
+                        } else {
+                            Log.e("Email", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Email Error", "Error fetching document", e);
+                    }
+                });
+    }
+
     private void getUserName() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
@@ -159,7 +211,8 @@ public class profile extends AppCompatActivity {
                             if (username != null && !username.isEmpty()) {
                                 Log.d("UserName", username);
                                 profileUserName = username;
-
+                                etprofileUsername.getEditText().setText(username);
+                                drawerUserName.setText(profileUserName);
                                 //Toast.makeText(getApplicationContext(),"Username:"+profileUserName,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Username ", "Username number not found");
@@ -220,32 +273,6 @@ public class profile extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    private void loadUserName() {
-        String uid = mAuth.getCurrentUser().getUid();
-        db.collection("users").document(uid).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            String username = documentSnapshot.getString("username");
-                            if (username != null && !username.isEmpty()) {
-                                Log.d("UserName", username);
-                                profileUsername.getEditText().setText(username);
-                            } else {
-                                Log.e("Username ", "Username number not found");
-                            }
-                        } else {
-                            Log.e("Username", "Document does not exist");
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("Phone Number", "Error fetching document", e);
-                    }
-                });
-    }
 
     private void fetchPhoneNumberFromFirebase() {
         String uid = mAuth.getCurrentUser().getUid();
@@ -299,7 +326,7 @@ public class profile extends AppCompatActivity {
 
     private void updateUserData() {
         String uid = mAuth.getCurrentUser().getUid();
-        String profileusername = profileUsername.getEditText().getText().toString();
+        String profileusername = etprofileUsername.getEditText().getText().toString();
         String usercallid = userCallId.getEditText().getText().toString();
 
         if (profileusername.isEmpty() || usercallid.isEmpty()) {
@@ -332,7 +359,7 @@ public class profile extends AppCompatActivity {
     private void storeImageInFirestore(Intent data) {
 
         Uri uri = data.getData();
-        circleImageView.setImageURI(uri);
+        profilecircleImageView.setImageURI(uri);
 
         ProgressDialog progressDialog = new ProgressDialog(profile.this);
         progressDialog.setTitle("File Uploader");
@@ -422,10 +449,12 @@ public class profile extends AppCompatActivity {
 
                             if (userProfileImage != null && !userProfileImage.isEmpty()) {
                                 // Use an image loading library like Glide or Picasso to load the image into your circleImageView
-                                Glide.with(profile.this).load(userProfileImage).into(circleImageView);
+                                Glide.with(profile.this).load(userProfileImage).into(profilecircleImageView);
+                                Glide.with(profile.this).load(userProfileImage).into(drawercircleImageView);
                             } else {
                                 // Set a placeholder image if the imageUrl is not available
-                                circleImageView.setImageResource(R.drawable.profile_image_logo);
+                                profilecircleImageView.setImageResource(R.drawable.profile_image_logo);
+                                drawercircleImageView.setImageResource(R.drawable.profile_image_logo);
                             }
                         } else {
                             Log.d("ProfileActivity", "No such document");

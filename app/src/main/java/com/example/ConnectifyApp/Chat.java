@@ -9,8 +9,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -19,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -41,10 +44,13 @@ public class Chat extends AppCompatActivity {
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ActionBarDrawerToggle drawerToggle;
-    String userProfileId,profileUserName,userProfileImage;
+    String userProfileName,userProfileId,userProfileEmail,userProfileImage;
     private FirebaseAuth mAuth;
     FirebaseFirestore db;
     FloatingActionButton floatingActionButton;
+    private ImageView circleImageView;
+    TextView drawerUserName,drawerUserEmail;
+    private View headerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +59,19 @@ public class Chat extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+
+        // For Left Side Drawer (Slide Bar)
+        drawerLayout = findViewById(R.id.drawerLayout);
+        navigationView = findViewById(R.id.navigationView);
+
+        // Getting the view of the Drawer from navigation view
+        headerView = navigationView.getHeaderView(0);
+
+        //Drawer Elements
+        circleImageView = headerView.findViewById(R.id.drawer_image);
+        drawerUserName = headerView.findViewById(R.id.drawerUserName);
+        drawerUserEmail = headerView.findViewById(R.id.drawerUserEmail);
+
 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
@@ -65,8 +84,8 @@ public class Chat extends AppCompatActivity {
         // To Fetch number from firebase to diaplay it on profile page
         fetchPhoneNumberFromFirebase();
 
-        //To Fetch The Username Of User
-        getUserName();
+        // Load drawer data from databse to display
+        loadDrawerData();
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
@@ -105,6 +124,84 @@ public class Chat extends AppCompatActivity {
             }
         });
     }
+
+    private void loadDrawerData() {
+        //Load an image from database
+        loadImage();
+
+        //load username
+        getUserName();
+
+        //load useremail
+        getUserEmail();
+
+    }
+
+    private void loadImage() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        firestore.collection("users").document(mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            userProfileImage = documentSnapshot.getString("imageUrl");
+                            if (userProfileImage != null && !userProfileImage.isEmpty()) {
+                                Log.d("User Avatar", userProfileImage);
+                                if (circleImageView != null) {
+                                    Glide.with(Chat.this).load(userProfileImage).into(circleImageView);
+                                } else {
+                                    Log.e("User Avatar", "CircleImageView is null");
+                                }
+                            } else {
+                                Log.e("User Avatar", "User avatar URL is null or empty");
+                            }
+                        } else {
+                            Log.e("User Avatar", "Document does not exist");
+                        }
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ProfileActivity", "Error getting document", e);
+                    }
+                });
+    }
+
+    private void getUserEmail() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String email = documentSnapshot.getString("email");
+                            if (email != null && !email.isEmpty()) {
+                                Log.d("UserName", email);
+                                userProfileEmail = email;
+                                drawerUserEmail.setText(userProfileEmail);
+                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                            } else {
+                                drawerUserEmail.setText("Email: Email Not Found");
+                                Log.e("Email ", "Email not found");
+                            }
+                        } else {
+                            Log.e("Email", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Email Error", "Error fetching document", e);
+                    }
+                });
+    }
+
+
 
     public void openDrawer(View view) {
         drawerLayout.open();
@@ -342,8 +439,8 @@ public class Chat extends AppCompatActivity {
                             String username = documentSnapshot.getString("username");
                             if (username != null && !username.isEmpty()) {
                                 Log.d("UserName", username);
-                                profileUserName = username;
-                                Toast.makeText(getApplicationContext(),"Username:"+profileUserName,Toast.LENGTH_SHORT).show();
+                                userProfileName = username;
+                                Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Username ", "Username number not found");
                             }

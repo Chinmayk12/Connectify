@@ -209,7 +209,7 @@ public class Home extends AppCompatActivity {
                                 Log.d("UserName", email);
                                 userProfileEmail = email;
                                 drawerUserEmail.setText(userProfileEmail);
-                                Toast.makeText(getApplicationContext(),"Email:"+userProfileName,Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
                             } else {
                                 drawerUserEmail.setText("Email: Email Not Found");
                                 Log.e("Email ", "Email not found");
@@ -502,6 +502,7 @@ public class Home extends AppCompatActivity {
                                 drawerUserName.setText(username);
                                 Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
                             } else {
+                                drawerUserName.setText("Username: Username not found");
                                 Log.e("Username ", "Username number not found");
                             }
                         } else {

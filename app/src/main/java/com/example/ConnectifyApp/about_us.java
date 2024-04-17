@@ -12,6 +12,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -23,6 +26,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.navigation.NavigationView;
@@ -40,9 +44,13 @@ public class about_us extends AppCompatActivity {
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     ActionBarDrawerToggle drawerToggle;
-    String userProfileId,profileUserName,userProfileImage;
+    String userProfileId,profileUserName,userProfileImage,userProfileEmail;
     private FirebaseAuth mAuth;
     FirebaseFirestore db;
+    private ImageView circleImageView;
+    TextView drawerUserName,drawerUserEmail;
+    private View headerView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +64,13 @@ public class about_us extends AppCompatActivity {
         navigationView = findViewById(R.id.navigationView);
         webView = findViewById(R.id.webView);
 
+        // Getting the view of the Drawer from navigation view
+        headerView = navigationView.getHeaderView(0);
+
+        //Drawer Elements
+        circleImageView = headerView.findViewById(R.id.drawer_image);
+        drawerUserName = headerView.findViewById(R.id.drawerUserName);
+        drawerUserEmail = headerView.findViewById(R.id.drawerUserEmail);
         // Initiating A Zegocloud Chat
         initZegoCloudChat();
 
@@ -65,15 +80,13 @@ public class about_us extends AppCompatActivity {
         // To Fetch number from firebase to diaplay it on profile page
         fetchPhoneNumberFromFirebase();
 
-        //To Fetch The Username Of User
-        getUserName();
+        // Load drawer data from databse to display
+        loadDrawerData();
 
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("https://chinmayk12.github.io/chinmaykarodpati/");
-
-
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @SuppressLint("NonConstantResourceId")
@@ -106,6 +119,19 @@ public class about_us extends AppCompatActivity {
         });
     }
 
+    private void loadDrawerData() {
+        //Load an image from database
+        loadImage();
+
+        //load username
+        getUserName();
+
+        //load useremail
+        getUserEmail();
+
+    }
+
+
     private void initZegoCloudChat() {
         Long appId = (long) 263772551;    // The AppID you get from ZEGOCLOUD Admin Console.
         String appSign = "4fde8262fa24e2a8e59e9a0ea37c6e61d725fd42286f67857d677af579d898b1";    // The App Sign you get from ZEGOCLOUD Admin Console.
@@ -133,6 +159,69 @@ public class about_us extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void loadImage() {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+
+        firestore.collection("users").document(mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            userProfileImage = documentSnapshot.getString("imageUrl");
+                            if (userProfileImage != null && !userProfileImage.isEmpty()) {
+                                Log.d("User Avatar", userProfileImage);
+                                if (circleImageView != null) {
+                                    Glide.with(about_us.this).load(userProfileImage).into(circleImageView);
+                                } else {
+                                    Log.e("User Avatar", "CircleImageView is null");
+                                }
+                            } else {
+                                Log.e("User Avatar", "User avatar URL is null or empty");
+                            }
+                        } else {
+                            Log.e("User Avatar", "Document does not exist");
+                        }
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("ProfileActivity", "Error getting document", e);
+                    }
+                });
+    }
+
+    private void getUserEmail() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String email = documentSnapshot.getString("email");
+                            if (email != null && !email.isEmpty()) {
+                                Log.d("UserName", email);
+                                userProfileEmail = email;
+                                drawerUserEmail.setText(userProfileEmail);
+                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                            } else {
+                                drawerUserEmail.setText("Email: Email Not Found");
+                                Log.e("Email ", "Email not found");
+                            }
+                        } else {
+                            Log.e("Email", "Document does not exist");
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Email Error", "Error fetching document", e);
+                    }
+                });
+    }
     private void getUserName() {
         String uid = mAuth.getCurrentUser().getUid();
         db.collection("users").document(uid).get()
