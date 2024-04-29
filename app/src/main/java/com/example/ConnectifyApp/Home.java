@@ -209,7 +209,7 @@ public class Home extends AppCompatActivity {
                                 Log.d("UserName", email);
                                 userProfileEmail = email;
                                 drawerUserEmail.setText(userProfileEmail);
-                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
                             } else {
                                 drawerUserEmail.setText("Email: Email Not Found");
                                 Log.e("Email ", "Email not found");
@@ -271,7 +271,7 @@ public class Home extends AppCompatActivity {
                         // Get new FCM registration token
                         String token = task.getResult();
                         Log.d("FCM Token:",token);
-                        Toast.makeText(Home.this, token, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(Home.this, token, Toast.LENGTH_SHORT).show();
                         // Update the token in Firebase Firestore or Realtime Database
                         updateTokenInFirebase(token);
                     }
@@ -371,7 +371,7 @@ public class Home extends AppCompatActivity {
                             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                                 Log.d("Phone Number", phoneNumber);
                                 userProfileId = phoneNumber;
-                                Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Phone Number", "Phone number not found");
                             }
@@ -391,7 +391,7 @@ public class Home extends AppCompatActivity {
 
     // Start Function Which Can Be Called Only When We Click On Start Button For Initiating Video Call
     private void start() {
-        Toast.makeText(getApplicationContext(),"In Start Fuction",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"In Start Fuction",Toast.LENGTH_SHORT).show();
 
         String targetusercallid = targetUsercallId.getEditText().getText().toString();
 
@@ -423,9 +423,9 @@ public class Home extends AppCompatActivity {
 
     // It Is A Service That Will Be Start Before Initing Call To The User
     private void startService(String uid,String username) {
-        Toast.makeText(getApplicationContext(),"In Start Service Function",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"In Start Service Function",Toast.LENGTH_SHORT).show();
 
-        Toast.makeText(getApplicationContext(),"UID:"+uid+" Username:"+username,Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"UID:"+uid+" Username:"+username,Toast.LENGTH_SHORT).show();
 
         Application application = getApplication(); // Android's application context
         long appID = 1125184998 ;   // yourAppID
@@ -440,7 +440,7 @@ public class Home extends AppCompatActivity {
 
     // For Starting Voice Call To User With His ID
     private void setVoiceCall(String targetUserId) {
-        Toast.makeText(getApplicationContext(),"In Voice Call Fuction",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"In Voice Call Fuction",Toast.LENGTH_SHORT).show();
 
         zegoVoiceCallbtn.setIsVideoCall(false);
         zegoVoiceCallbtn.setEnabled(false);
@@ -450,7 +450,7 @@ public class Home extends AppCompatActivity {
 
     // For Starting Video Call To User With His ID
     private void setVideoCall(String targetUserId) {
-        Toast.makeText(getApplicationContext(),"In Video Call Function",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(),"In Video Call Function",Toast.LENGTH_SHORT).show();
 
         zegoVideoCallbtn.setIsVideoCall(true);
         zegoVideoCallbtn.setResourceID("zego_uikit_call"); // Please fill in the resource ID name that has been configured in the ZEGOCLOUD's console here.
@@ -500,7 +500,7 @@ public class Home extends AppCompatActivity {
                                 Log.d("UserName", username);
                                 userProfileName = username;
                                 drawerUserName.setText(username);
-                                Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
                             } else {
                                 drawerUserName.setText("Username: Username not found");
                                 Log.e("Username ", "Username number not found");
@@ -549,7 +549,7 @@ public class Home extends AppCompatActivity {
                             String storedPhoneNumber = document.getString("usercallid");
                             if (storedPhoneNumber != null && storedPhoneNumber.equals(phNumber)) {
                                 // Phone number already stored, no need to save again
-                                Toast.makeText(getApplicationContext(), "Phone number already stored", Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(), "Phone number already stored", Toast.LENGTH_SHORT).show();
                             } else {
                                 // Save the phone number to Firestore
                                 Map<String, Object> userPhNo = new HashMap<>();

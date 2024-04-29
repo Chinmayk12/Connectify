@@ -182,7 +182,7 @@ public class profile extends AppCompatActivity {
                                 Log.d("UserName", email);
                                 userProfileEmail = email;
                                 drawerUserEmail.setText(userProfileEmail);
-                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
                             } else {
                                 drawerUserEmail.setText("Email: Email Not Found");
                                 Log.e("Email ", "Email not found");

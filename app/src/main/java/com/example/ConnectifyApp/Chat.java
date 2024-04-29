@@ -183,7 +183,7 @@ public class Chat extends AppCompatActivity {
                                 Log.d("UserName", email);
                                 userProfileEmail = email;
                                 drawerUserEmail.setText(userProfileEmail);
-                                Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Email:"+userProfileEmail,Toast.LENGTH_SHORT).show();
                             } else {
                                 drawerUserEmail.setText("Email: Email Not Found");
                                 Log.e("Email ", "Email not found");
@@ -412,7 +412,7 @@ public class Chat extends AppCompatActivity {
                             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                                 Log.d("Phone Number", phoneNumber);
                                 userProfileId = phoneNumber;
-                                Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Phone No:"+userProfileId,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Phone Number", "Phone number not found");
                             }
@@ -440,7 +440,7 @@ public class Chat extends AppCompatActivity {
                             if (username != null && !username.isEmpty()) {
                                 Log.d("UserName", username);
                                 userProfileName = username;
-                                Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(getApplicationContext(),"Username:"+userProfileName,Toast.LENGTH_SHORT).show();
                             } else {
                                 Log.e("Username ", "Username number not found");
                             }
