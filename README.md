@@ -21,12 +21,19 @@ ConnectifyApp is an Android application that allows users to chat with others, c
 
 -![WhatsApp Image 2024-04-30 at 2 38 07 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/9ff1a835-9d8a-4d47-b893-8d2d35d57cb9)
 
+- ![WhatsApp Image 2024-04-30 at 2 27 20 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/21386ac8-e51f-4472-b318-d1eca81de3f6)
+
+- ![WhatsApp Image 2024-04-30 at 2 27 19 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/f4af512d-cbbd-4309-a9c2-be4c0760a0a8)
+
+- ![WhatsApp Image 2024-04-30 at 2 27 18 AM (1)](https://github.com/Chinmayk12/Connectify/assets/137162238/8db562f2-384b-416c-93e8-ea8a653f14af)
 
 -![WhatsApp Image 2024-04-30 at 2 27 21 AM (2)](https://github.com/Chinmayk12/Connectify/assets/137162238/98c24f97-777e-4bb4-af43-01c9d68ac431)
 
 - ![WhatsApp Image 2024-04-30 at 2 29 45 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/daeee165-9af6-47eb-995f-eec807e2716b)
 
 - ![WhatsApp Image 2024-04-30 at 2 27 20 AM (2)](https://github.com/Chinmayk12/Connectify/assets/137162238/6884fc05-5452-44bb-8271-44d098414828)
+
+-![WhatsApp Image 2024-04-30 at 2 27 20 AM (1)](https://github.com/Chinmayk12/Connectify/assets/137162238/73e02bbf-53a1-4ef5-9ff1-f79819f551c9)
 
 
 
