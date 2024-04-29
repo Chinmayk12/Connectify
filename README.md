@@ -19,6 +19,9 @@ ConnectifyApp is an Android application that allows users to chat with others, c
 
 -![WhatsApp Image 2024-04-30 at 2 27 22 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/86eccd49-22ec-4e6f-834f-c7a1e4919808)
 
+-![WhatsApp Image 2024-04-30 at 2 38 07 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/9ff1a835-9d8a-4d47-b893-8d2d35d57cb9)
+
+
 -![WhatsApp Image 2024-04-30 at 2 27 21 AM (2)](https://github.com/Chinmayk12/Connectify/assets/137162238/98c24f97-777e-4bb4-af43-01c9d68ac431)
 
 - ![WhatsApp Image 2024-04-30 at 2 29 45 AM](https://github.com/Chinmayk12/Connectify/assets/137162238/daeee165-9af6-47eb-995f-eec807e2716b)
