@@ -130,7 +130,7 @@ public class Home extends AppCompatActivity {
                 .onExplainRequestReason(new ExplainReasonCallback() {
                     @Override
                     public void onExplainReason(@NonNull ExplainScope scope, @NonNull List<String> deniedList) {
-                        String message = "We need your consent for the following permissions in order to use the offline call function properly";
+                        String message = "We need your consent for the following permissions in order to use the offline call function properly.";
                         scope.showRequestReasonDialog(deniedList, message, "Allow", "Deny");
                     }
                 }).request(new RequestCallback() {
