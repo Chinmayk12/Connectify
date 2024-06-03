@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:228353396534:android:d16208414288fbbf23ed97",
         "android_client_info": {
-          "package_name": "com.example.ConnectifyApp"
+          "package_name": "com.Chinmay.ConnectifyApp"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "228353396534-ldu6tft6fl9uamal96f6clkosd4su5og.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.ConnectifyApp",
+            "package_name": "com.Chinmay.ConnectifyApp",
             "certificate_hash": "892cd42eb468975defcf7bc9e0921061fc387ae4"
           }
         },

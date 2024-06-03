@@ -1,9 +1,5 @@
-package com.example.ConnectifyApp;
+package com.Chinmay.ConnectifyApp;
 
-    import static android.content.Context.TELEPHONY_SERVICE;
-
-    import androidx.activity.result.ActivityResultLauncher;
-    import androidx.activity.result.contract.ActivityResultContracts;
     import androidx.annotation.NonNull;
     import androidx.appcompat.app.ActionBarDrawerToggle;
     import androidx.appcompat.app.AppCompatActivity;
@@ -48,7 +44,6 @@ package com.example.ConnectifyApp;
     import com.permissionx.guolindev.request.ExplainScope;
     import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService;
     import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig;
-    import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService;
     import com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton;
     import com.zegocloud.uikit.service.defines.ZegoUIKitUser;
     import com.zegocloud.zimkit.services.ZIMKit;
@@ -163,6 +158,7 @@ public class Home extends AppCompatActivity {
                 else if(item.getItemId()==R.id.chat)
                 {
                     connectUser(userProfileId, userProfileName,userProfileImage);
+                    startActivity(new Intent(getApplicationContext(), Chat.class));
                     closeDrawer(navigationView);
                     //finish();
                 }

@@ -117,7 +117,7 @@
                                 android:layout_height="100dp"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:background="@drawable/radio_call_image" />
+                                android:background="@drawable/call_icon" />
                         </LinearLayout>
 
                         <LinearLayout

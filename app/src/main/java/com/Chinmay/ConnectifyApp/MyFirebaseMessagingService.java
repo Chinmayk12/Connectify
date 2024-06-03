@@ -1,12 +1,8 @@
-package com.example.ConnectifyApp;
+package com.Chinmay.ConnectifyApp;
 
-import android.app.Service;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.IBinder;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;

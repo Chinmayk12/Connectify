@@ -1,4 +1,4 @@
-package com.example.ConnectifyApp;
+package com.Chinmay.ConnectifyApp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;

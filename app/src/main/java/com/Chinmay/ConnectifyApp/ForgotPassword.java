@@ -1,4 +1,4 @@
-package com.example.ConnectifyApp;
+package com.Chinmay.ConnectifyApp;
 
 import android.content.Intent;
 import android.os.Bundle;

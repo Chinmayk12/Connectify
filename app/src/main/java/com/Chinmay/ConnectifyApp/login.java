@@ -1,4 +1,4 @@
-package com.example.ConnectifyApp;
+package com.Chinmay.ConnectifyApp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -104,7 +104,7 @@ public class login extends AppCompatActivity {
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), com.example.ConnectifyApp.signup.class));
+                startActivity(new Intent(getApplicationContext(), com.Chinmay.ConnectifyApp.signup.class));
             }
         });
 
