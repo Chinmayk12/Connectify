@@ -27,8 +27,6 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             />
-
-        
     </Toolbar>
 
 </LinearLayout>
